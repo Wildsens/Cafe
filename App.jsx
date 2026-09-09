@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+/** @paper-design/shaders-react@0.0.80 */
+import { PulsingBorder } from '@paper-design/shaders-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('home'); // 'home' | 'food' | 'drinks'
   const [hoveredView, setHoveredView] = useState(null); // 'food' | 'drinks' | null
   
+  // Автоматичний стан лагів (ставить на паузу при просадці, назад не знімається)
   const [isLagging, setIsLagging] = useState(false);
   
   const [name, setName] = useState('');
@@ -19,7 +22,7 @@ export default function App() {
       {
         name: 'Макар',
         text: 'Мені все сподобалось, особливо горішок!',
-        images: ['/Images/back2.png']
+        images: ['./Images/back2.png']
       }
     ],
     drinks: [
@@ -31,7 +34,7 @@ export default function App() {
     ]
   });
 
-  // Автоматичне вимірювання FPS
+  // Автоматичне вимірювання FPS (тільки ставить на паузу при просадці)
   useEffect(() => {
     let frameCount = 0;
     let lastTime = performance.now();
@@ -108,27 +111,29 @@ export default function App() {
 
   const activeTheme = hoveredView || (currentView !== 'home' ? currentView : 'food');
   
-  // Стандартний глибокий темний фон замість сторонніх кривих шейдерів
-  const bgGradientStyle = activeTheme === 'food'
-    ? 'radial-gradient(circle at 20% 20%, #4a0d0d 0%, #150505 40%, #000000 80%)'
-    : 'radial-gradient(circle at 80% 80%, #3d2610 0%, #140c05 40%, #000000 80%)';
+  // Синє оформлення для Drinks, червоне для Food
+  const shaderColors = activeTheme === 'food' 
+    ? ['#500000', '#D02000', '#A00000', '#FF0000', '#C2493B'] 
+    : ['#001133', '#004488', '#002266', '#0066CC', '#2288EE'];
+
+  const isPaused = isLagging;
 
   return (
     <div style={{ 
       position: 'relative', 
       width: '100vw', 
-      height: '100dvh', 
+      minHeight: '100vh', 
       overflowY: 'auto', 
       fontFamily: 'system-ui, -apple-system, sans-serif',
       display: 'flex',
       alignItems: currentView === 'home' ? 'center' : 'flex-start', 
       justifyContent: 'center',
       boxSizing: 'border-box',
-      padding: '40px 24px 80px 24px',
+      padding: '40px 24px',
       backgroundColor: '#000000'
     }}>
 
-      {/* ІНДИКАТОР ЕНЕРГОЗБЕРЕЖЕННЯ */}
+      {/* ІНДИКАТОР СТАНУ */}
       {isLagging && (
         <div style={{
           position: 'fixed',
@@ -149,7 +154,7 @@ export default function App() {
         </div>
       )}
 
-      {/* СТАНДАРТНИЙ ТЕМНИЙ ФОН (без шейдерів і синяви) */}
+      {/* ФОНОВИЙ ШАР */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -158,9 +163,40 @@ export default function App() {
         height: '100vh',
         zIndex: 0,
         pointerEvents: 'none',
-        background: bgGradientStyle,
-        transition: 'background 0.8s ease-in-out',
+        overflow: 'hidden',
         backgroundColor: '#000000'
+      }}>
+        <PulsingBorder 
+          speed={isPaused ? 0 : 0.18} 
+          roundness={0} 
+          thickness={0.38} 
+          softness={1} 
+          intensity={0.45} 
+          bloom={0.11} 
+          spots={4} 
+          spotSize={0.21} 
+          pulse={0} 
+          smoke={0.12} 
+          smokeSize={1} 
+          scale={1.13} 
+          rotation={360} 
+          aspectRatio="auto" 
+          colors={shaderColors} 
+          colorBack="#000000" 
+          style={{ width: '100%', height: '100%', display: 'block' }} 
+        />
+      </div>
+
+      {/* Затемнюючий шар */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(10, 10, 12, 0.75)',
+        zIndex: 1,
+        pointerEvents: 'none'
       }} />
 
       {/* ЕКРАН 1: ГОЛОВНЕ МЕНЮ */}
@@ -196,8 +232,8 @@ export default function App() {
 
           <div style={{ display: 'flex', gap: '3.5rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
             {[
-              { view: 'food', src: '/Images/Family_Food.png', alt: 'Family Food Logo', glowColor: 'rgba(255, 0, 0, 0.4)', borderColor: 'rgba(255, 50, 50, 0.6)' },
-              { view: 'drinks', src: '/Images/Family_Drinks.png', alt: 'Family Drinks Logo', glowColor: 'rgba(217, 155, 82, 0.4)', borderColor: 'rgba(217, 155, 82, 0.6)' }
+              { view: 'food', src: './Images/Family_Food.png', alt: 'Family Food Logo', glowColor: 'rgba(255, 0, 0, 0.4)', borderColor: 'rgba(255, 50, 50, 0.6)' },
+              { view: 'drinks', src: './Images/Family_Drinks.png', alt: 'Family Drinks Logo', glowColor: 'rgba(0, 102, 204, 0.4)', borderColor: 'rgba(0, 136, 255, 0.6)' }
             ].map((item, index) => {
               const isHovered = hoveredView === item.view;
               return (
@@ -293,7 +329,7 @@ export default function App() {
 
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.2rem' }}>
               <img 
-                src={currentView === 'food' ? '/Images/Family_Food.png' : '/Images/Family_Drinks.png'} 
+                src={currentView === 'food' ? './Images/Family_Food.png' : './Images/Family_Drinks.png'} 
                 alt="Logo" 
                 style={{ height: '80px', objectFit: 'contain', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,0.5))' }} 
               />
@@ -652,7 +688,13 @@ export default function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+// Захист від дублюючого createRoot
+const container = document.getElementById('root');
+if (!window.__root) {
+  window.__root = ReactDOM.createRoot(container);
+}
+
+window.__root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
